@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+</head>
+
+<body>
+  <div id="container">Klausurampel</div>
+
+  <hr class="separator">
+  <div class="information">
+    <div id="timeDisplay">–</div>
+
+    <h2>Timer konfigurieren</h2>
+    <label for="duration">Dauer (1–120 Minuten):</label>
+    <input type="number" id="duration" min="1" max="120" value="15">
+    <button onclick="saveDuration()">Speichern</button>
+    <p id="saveStatus"></p>
+
+    <hr class="separator">
+
+    <p>Batteriespannung: <span id="batteryVoltage">–</span> V</p>
+  </div>
+  
+
+
+  <script>
+
+    function updateColor() {
+      fetch('/led')
+        .then(response => response.json())
+        .then(data => {
+          const rgb = `rgb(${data.r}, ${data.g}, ${data.b})`;
+          const container = document.getElementById('container');
+          if (container) {
+            container.style.backgroundColor = rgb;
+          }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function updateTime() {
+      fetch('/time')
+        .then(response => response.json())
+        .then(data => {
+          const remaining = data.remaining;
+          document.getElementById("timeDisplay").innerText = `${(remaining / 1000).toFixed(1)} Sekunden`;
+        })
+        .catch(err => console.error(err));
+    }
+
+
+    function saveDuration() {
+      const minutes = parseInt(document.getElementById("duration").value);
+      if (isNaN(minutes) || minutes < 1 || minutes > 120) {
+        alert("Zahl zwischen 1 und 120 ein.");
+        return;
+      }
+
+      fetch('/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ duration: minutes })
+      })
+      .then(response => {
+        if (response.ok) {
+         document.getElementById("saveStatus").innerText = "Gespeichert!";
+        } else {
+          document.getElementById("saveStatus").innerText = "Fehler beim Speichern.";
+        }
+      })
+      .catch(err => console.error(err));
+    }
+
+    function updateBatteryVoltage() {
+      fetch('/config')
+      .then(response => response.json())
+      .then(data => {
+        if ('battery_voltage' in data) {
+          document.getElementById('batteryVoltage').innerText = data.battery_voltage.toFixed(2);
+        }
+      })
+      .catch(err => console.error('Fehler beim Laden der Batteriespannung:', err));
+    }
+
+    setInterval(updateTime, 1000);
+    setInterval(updateBatteryVoltage, 1000);
+    setInterval(updateColor, 500);
+
+  </script>
+</body>
+</html>
