@@ -3,6 +3,8 @@
 #include <Adafruit_PN532.h>
 #include <timer.h>
 #include <led.h>
+#include <SPIFFS.h>
+#include <ArduinoJSON.h>
 
 #define SDA_PIN 6
 #define SCL_PIN 7
@@ -208,4 +210,30 @@ bool kill_timer()
             }
         }
     }
+}
+
+// This function requires the SPIFFs to be mounted before calling it.
+// It loads the timer configuration from a JSON file.
+void load_timer()
+{
+    File file = SPIFFS.open("/confi.json", "r");
+    if (!file)
+    {
+        Serial.println("Failed to open config file");
+        return;
+    }
+
+    StaticJsonDocument<256> doc;
+    DeserializationError error = deserializeJson(doc, file);
+    file.close();
+
+    if (error)
+    {
+        Serial.println("Failed to parse config file");
+        return;
+    }
+
+    duration = doc["duration"].as<uint32_t>() | DURATION; // Default to DURATION if not set
+
+    timer = new Timer(duration);
 }

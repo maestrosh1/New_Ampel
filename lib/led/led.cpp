@@ -7,6 +7,7 @@
 #define NUM_LEDS 64
 #define NUM_ROWS 8
 #define NUM_COLS 8
+#define SWAPPED_LEDS 3
 
 CRGB leds[NUM_LEDS];
 
@@ -14,9 +15,11 @@ CRGB leds[NUM_LEDS];
 // It configures the data pin, number of LEDs, and brightness level.
 void led_setup()
 {
-    FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
+    // Split the LED strip into two parts: the first SWAPPED_LEDS are in RGB order, the rest in GRB order.
+    FastLED.addLeds<WS2812B, DATA_PIN, RGB>(leds, SWAPPED_LEDS);
+    FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds + SWAPPED_LEDS, NUM_LEDS - SWAPPED_LEDS);
     FastLED.setBrightness(BRIGHTNESS);
-    FastLED.clear();
+    FastLED.clear(true);
     FastLED.show();
 }
 
