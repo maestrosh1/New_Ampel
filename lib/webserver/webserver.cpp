@@ -16,6 +16,9 @@ void webserver_setup() {
     Serial.println("SPIFFS konnte nicht gemountet werden");
     return;
   }
+  Serial.println("SPIFFS konnte  gemountet werden");
+  // Standard-Duration auf 20 Minuten
+  saveConfig(20);
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     File file = SPIFFS.open("/index.html", "r");
@@ -112,7 +115,7 @@ void saveConfig(uint32_t durationMinutes) {
     doc["duration"] = durationMinutes;
     serializeJson(doc, file);
     file.close();
-    Serial.println("Neue Dauer gespeichert: " + String(durationMinutes) + " Minuten");
+    Serial.println("Aktuelle Dauer " + String(durationMinutes) + " Minuten");
 }
 
 

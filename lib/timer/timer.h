@@ -39,4 +39,11 @@ private:
     RGBColor lastLedColor = {0, 0, 0};
     uint32_t max_duration;
     RGBColor calcColor(uint32_t);
+    void before_stop();
+
 };
+
+bool kill_timer();
+
+
+extern Timer timer; 

@@ -93,7 +93,7 @@ void nfc_loop()
             }
         }
 
-        Serial.println("If this is the only thing that shows up, i2c does not work.");
+        // Serial.println("If this is the only thing that shows up, i2c does not work.");
     }
     timer.tick();
 }
@@ -210,6 +210,8 @@ bool kill_timer()
             }
         }
     }
+
+    return false;
 }
 
 // This function requires the SPIFFs to be mounted before calling it.
@@ -233,7 +235,12 @@ void load_timer()
         return;
     }
 
-    duration = doc["duration"].as<uint32_t>() | DURATION; // Default to DURATION if not set
+    //duration = doc["duration"].as<uint32_t>() | DURATION; // Default to DURATION if not set
 
-    timer = new Timer(duration);
+    uint32_t duration = DURATION;
+    if (doc.containsKey("duration")) {
+    duration = doc["duration"].as<uint32_t>();
+    }
+
+    timer = Timer(duration);
 }

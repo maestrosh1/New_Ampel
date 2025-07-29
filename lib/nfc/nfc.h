@@ -10,3 +10,4 @@ void resetWildCard();
 void handleWildCard();
 bool isWildCard();
 void exec();
+bool myHandleWildCard();

@@ -6,8 +6,8 @@
 
 #define I2C_SDA 6
 #define I2C_SCL 7
-#define PN532_IRQ -1
-#define PN532_RESET -1
+#define PN532_IRQ 5
+#define PN532_RESET 21
 
 
 
@@ -15,6 +15,8 @@ void setup()
 {
     Serial.begin(115200);
     delay(1000);
+    pinMode(3,OUTPUT);
+    digitalWrite(3,HIGH);
 
     WiFi.mode(WIFI_AP);
     String ssid = "Klausurampel_" + WiFi.macAddress();
