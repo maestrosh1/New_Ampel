@@ -23,7 +23,7 @@ hr.separator {
   height: 4px;
   background-color: #333;
   border: none;
-  margin: 40px auto 20px auto;
+  margin: 40px auto 40px auto;
   border-radius: 2px;
 }
 
@@ -50,6 +50,7 @@ label {
   max-width: 300px;
   color: #555;
   font-family: Arial, sans-serif;
+  font-size: 0.6em;
 }
 
 input[type="number"] {
@@ -103,3 +104,10 @@ button:hover {
   color: white;
 }
 
+#batteryVoltageContainer{
+  background-color: black; 
+  padding: 5px 20px;    
+  display: inline-block; 
+  border-radius: 15px;   
+  transition: background-color 0.5s ease;
+}

@@ -10,7 +10,7 @@
 #define SCL_PIN 7
 #define RESET 5
 #define Sektor 2
-#define DURATION 15000 // 1 minute in milliseconds
+#define DURATION 98000 // 1 minute in milliseconds
 #define TIMEOUT 200    // 200 milliseconds timeout for NFC operations
 uint8_t firstBlock;
 bool compareUID(uint8_t *uid1, uint8_t len1, uint8_t *uid2, uint8_t len2);

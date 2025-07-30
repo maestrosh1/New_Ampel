@@ -17,8 +17,6 @@ void webserver_setup() {
     return;
   }
   Serial.println("SPIFFS konnte  gemountet werden");
-  // Standard-Duration auf 20 Minuten
-  saveConfig(20);
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     File file = SPIFFS.open("/index.html", "r");
@@ -101,19 +99,6 @@ void webserver_setup() {
     });
 
 
-  /*server.on("/somepath", HTTP_GET, [](AsyncWebServerRequest *request) {
-  if (timer.getState() == TimerState::STOPPING) {
-    request->send(503, "text/plain", "LED busy, try later");
-    return;
-  }
-
-  // sonst normale Verarbeitung, z.B.
-  request->send(200, "text/plain", "OK");
-});
-*/
-
-
-
 
   // NFC-freundliche Server-Konfiguration
   server.onNotFound([](AsyncWebServerRequest *request){
@@ -124,20 +109,6 @@ void webserver_setup() {
   Serial.println("Webserver gestartet - NFC-kompatibel konfiguriert");
 }
 
-// SaveCOnfig verliert battery_voltage beim Speichern
-/*void saveConfig(uint32_t durationMinutes) {
-    File file = SPIFFS.open("/config.json", FILE_WRITE);
-    if (!file) {
-        Serial.println("Konnte config.json nicht öffnen");
-        return;
-    }
-
-    StaticJsonDocument<128> doc;
-    doc["duration"] = durationMinutes;
-    serializeJson(doc, file);
-    file.close();
-    Serial.println("Aktuelle Dauer " + String(durationMinutes) + " Minuten");
-}*/
 
 void saveConfig(uint32_t durationMinutes) {
     StaticJsonDocument<128> doc;

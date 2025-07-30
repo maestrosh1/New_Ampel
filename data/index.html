@@ -11,8 +11,10 @@
   <hr class="separator">
   <div class="information">
     <div id="timeDisplay">–</div>
+    <hr class="separator">
 
     <h2>Timer konfigurieren</h2>
+    <p>Aktueller Timerwert: <span id="timerValue">–</span> Minuten</p>
     <label for="duration">Dauer (1–120 Minuten):</label>
     <input type="number" id="duration" min="1" max="120" value="15">
     <button onclick="saveDuration()">Speichern</button>
@@ -20,7 +22,9 @@
 
     <hr class="separator">
 
-    <p>Batteriespannung: <span id="batteryVoltage">–</span> V</p>
+    <div id="batteryVoltageContainer">
+      <p>Batteriespannung: <span id="batteryVoltage">–</span> V</p>
+    </div>
   </div>
   
 
@@ -106,7 +110,10 @@
         .then(response => response.json())
         .then(data => {
           const remaining = data.remaining;
-          document.getElementById("timeDisplay").innerText = `${(remaining / 1000).toFixed(1)} Sekunden`;
+          const totalSeconds = Math.floor(remaining / 1000);
+          const minutes = Math.floor(totalSeconds / 60);
+          const seconds = totalSeconds % 60;
+          document.getElementById("timeDisplay").innerText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
           // Checkpoint-Logik: Wenn Timer checkpoint erreicht, weiß System, ob vorzeitig beendet oder nicht
           // Ampel wurde gestartet
@@ -176,14 +183,36 @@
         if ('battery_voltage' in data) {
           document.getElementById('batteryVoltage').innerText = data.battery_voltage.toFixed(2);
         }
+
+        if (data.battery_voltage <= 3.6) {
+          document.getElementById('batteryVoltageContainer').style.backgroundColor = "red";
+        } else if (data.battery_voltage <= 3.75 && data.battery_voltage > 3.6) {
+          document.getElementById('batteryVoltageContainer').style.backgroundColor = "orange";
+        } else {
+          document.getElementById('batteryVoltageContainer').style.backgroundColor = "black";
+        }
       })
-      .catch(err => console.error('Fehler beim Laden der Batteriespannung:', err));
+
+      .catch(err => console.error('Fehler beim Laden der Batteriespannung:', err))
+      
+    }
+
+    function updateTimerValue() {
+      fetch('/config')
+      .then(response => response.json())
+      .then(data => {
+        if ('duration' in data) {
+          document.getElementById('timerValue').innerText = data.duration.toFixed(0);
+        }
+      })
+      .catch(err => console.error('Fehler beim Laden des Timer-Wertes', err));
     }
 
     // Methoden aufrufen
     setInterval(updateTime, 1000);
     setInterval(updateBatteryVoltage, 1000);
     setInterval(updateColor, 500);
+    setInterval(updateTimerValue, 2000);
 
   </script>
 </body>
