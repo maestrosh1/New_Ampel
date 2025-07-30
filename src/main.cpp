@@ -3,24 +3,33 @@
 #include <led.h>
 #include <WiFi.h>
 #include <webserver.h>
+#include <SPIFFS.h>
+#include <ArduinoJson.h>
 
-#define I2C_SDA 6
-#define I2C_SCL 7
-#define PN532_IRQ -1
-#define PN532_RESET -1
+#define Ringbuffer_SIZE 64 
 
-volatile bool ledBusy = false; // globaler Status, ob LED gerade blinkt
+int RingBuffer[Ringbuffer_SIZE]; 
+int buffer_index = 0; 
+int sum = 0;
 
-void startLedBlink() {
-  ledBusy = true;
-  // Hier deinen LED-Blink-Code starten (Timer, Task, whatever)
+
+void saveBatteryVoltage(float voltage) {
+    File configFile = SPIFFS.open("/config.json", "r");
+    StaticJsonDocument<512> doc;
+    if (configFile) {
+        DeserializationError error = deserializeJson(doc, configFile);
+        configFile.close();
+        if (error) {
+            doc.clear();
+        }
+    }
+    doc["battery_voltage"] = voltage;
+    configFile = SPIFFS.open("/config.json", "w");
+    if (configFile) {
+        serializeJsonPretty(doc, configFile);
+        configFile.close();
+    }
 }
-
-void stopLedBlink() {
-  ledBusy = false;
-  // Hier alles beenden, wenn LED fertig geblinkt hat
-}
-
 
 
 void setup()
@@ -29,6 +38,7 @@ void setup()
     delay(1000);
     pinMode(3,OUTPUT);
     digitalWrite(3,HIGH);
+    pinMode(2, INPUT);
 
     WiFi.mode(WIFI_AP);
     String ssid = "Klausurampel_" + WiFi.macAddress();
@@ -51,6 +61,15 @@ void setup()
 void loop()
 {
     nfc_loop();
-    
-}
 
+    int input = analogReadMilliVolts(2);
+    sum = sum - RingBuffer[buffer_index] + input;
+    RingBuffer[buffer_index] = input;
+    buffer_index = (buffer_index + 1 ) % Ringbuffer_SIZE;
+    Serial.print("Battery voltage: ");
+    Serial.println(input);
+    
+    float battteryVoltage = ((sum / Ringbuffer_SIZE) / 1000.0) * 2; 
+   
+    saveBatteryVoltage(battteryVoltage); // Wert speichern
+}
