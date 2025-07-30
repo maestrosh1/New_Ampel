@@ -31,6 +31,11 @@ void webserver_setup() {
 
   server.serveStatic("/style.css", SPIFFS, "/style.css");
 
+  // NFC-freundliche Webserver-Konfiguration
+  /*server.onRequestBody([](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+    // Kurze Verzögerung um NFC nicht zu blockieren
+    yield();
+  });*/
 
   // JSON-Rückgabe der aktuellen LED-Farbe
     server.on("/led", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -40,8 +45,7 @@ void webserver_setup() {
         json += "\"g\":" + String(c.g) + ",";
         json += "\"b\":" + String(c.b);
         json += "}";
-        request->send(200, "application/json", json);
-    });
+        request->send(200, "application/json", json);     });
 
     // JSON-Rückgabe der verbleibenden Zeit
     server.on("/time", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -66,7 +70,6 @@ void webserver_setup() {
       request->send(400, "application/json", "{\"error\":\"Missing 'duration'\"}");
       return;
     }
-
     uint32_t durationMin = doc["duration"];
     if (durationMin < 1 || durationMin > 120) {
       request->send(400, "application/json", "{\"error\":\"Out of range (1–120)\"}");
@@ -98,13 +101,31 @@ void webserver_setup() {
     });
 
 
+  /*server.on("/somepath", HTTP_GET, [](AsyncWebServerRequest *request) {
+  if (timer.getState() == TimerState::STOPPING) {
+    request->send(503, "text/plain", "LED busy, try later");
+    return;
+  }
 
+  // sonst normale Verarbeitung, z.B.
+  request->send(200, "text/plain", "OK");
+});
+*/
+
+
+
+
+  // NFC-freundliche Server-Konfiguration
+  server.onNotFound([](AsyncWebServerRequest *request){
+    request->send(404, "text/plain", "Not found");
+  });
 
   server.begin();
+  Serial.println("Webserver gestartet - NFC-kompatibel konfiguriert");
 }
 
-
-void saveConfig(uint32_t durationMinutes) {
+// SaveCOnfig verliert battery_voltage beim Speichern
+/*void saveConfig(uint32_t durationMinutes) {
     File file = SPIFFS.open("/config.json", FILE_WRITE);
     if (!file) {
         Serial.println("Konnte config.json nicht öffnen");
@@ -116,6 +137,31 @@ void saveConfig(uint32_t durationMinutes) {
     serializeJson(doc, file);
     file.close();
     Serial.println("Aktuelle Dauer " + String(durationMinutes) + " Minuten");
+}*/
+
+void saveConfig(uint32_t durationMinutes) {
+    StaticJsonDocument<128> doc;
+
+    // Vorherigen Inhalt laden (wenn vorhanden) -> battery_voltage
+    File inFile = SPIFFS.open("/config.json", FILE_READ);
+    if (inFile) {
+        deserializeJson(doc, inFile);
+        inFile.close();
+    }
+
+    doc["duration"] = durationMinutes;
+
+    File outFile = SPIFFS.open("/config.json", FILE_WRITE);
+    if (!outFile) {
+        Serial.println("Konnte config.json nicht zum Schreiben öffnen");
+        return;
+    }
+
+    serializeJson(doc, outFile);
+    outFile.close();
+
+    Serial.println("Konfig gespeichert: Dauer = " + String(durationMinutes));
 }
+
 
 

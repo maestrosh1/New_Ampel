@@ -3,11 +3,11 @@
 #include <FastLED.h>
 
 #define DATA_PIN 4
-#define BRIGHTNESS 5
-#define NUM_LEDS 29
-#define NUM_ROWS 5
-#define NUM_COLS 5
-#define SWAPPED_LEDS 4
+#define BRIGHTNESS 100
+#define NUM_LEDS 3 
+#define NUM_ROWS 1
+#define NUM_COLS 4
+#define SWAPPED_LEDS 0
 
 CRGB leds[NUM_LEDS];
 

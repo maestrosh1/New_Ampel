@@ -26,6 +26,7 @@ void Timer::pause(RGBColor color)
         remainingMilllis = endMillis - millis();
         state = TimerState::PAUSED;
         show_color_identifier(lastLedColor, color);
+        show_color(RGBColor{0, 0, 255});
     }
 }
 
@@ -56,6 +57,7 @@ void Timer::tick()
 {
     if (state != TimerState::RUNNING)
     {
+        
         return;
     }
 
@@ -79,6 +81,7 @@ void Timer::tick()
 
 void Timer::before_stop()
 {
+    state = TimerState::STOPPING;
     bool killed = false;
     while (!killed)
     {
@@ -129,4 +132,9 @@ uint32_t Timer::getRemainingTime() const
     {
         return 0;
     }
+}
+
+TimerState Timer::getState()
+{
+    return state;
 }

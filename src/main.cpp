@@ -1,4 +1,4 @@
-#include <Arduino.h>
+ #include <Arduino.h>
 #include <nfc.h>
 #include <led.h>
 #include <WiFi.h>
@@ -6,8 +6,20 @@
 
 #define I2C_SDA 6
 #define I2C_SCL 7
-#define PN532_IRQ 5
-#define PN532_RESET 21
+#define PN532_IRQ -1
+#define PN532_RESET -1
+
+volatile bool ledBusy = false; // globaler Status, ob LED gerade blinkt
+
+void startLedBlink() {
+  ledBusy = true;
+  // Hier deinen LED-Blink-Code starten (Timer, Task, whatever)
+}
+
+void stopLedBlink() {
+  ledBusy = false;
+  // Hier alles beenden, wenn LED fertig geblinkt hat
+}
 
 
 
@@ -26,12 +38,19 @@ void setup()
     Serial.print("AP IP address: ");
     Serial.println(IP);
 
+    // Wichtig: SPIFFS zuerst mounten
+    webserver_setup(); // Hier wird SPIFFS gemountet und Timer-Config erstellt
+    
+    // Dann NFC setup (lädt Timer-Config)
     nfc_setup();
+    
+    // LED setup zuletzt
     led_setup();
-    webserver_setup();
 }
 
 void loop()
 {
     nfc_loop();
+    
 }
+

@@ -5,7 +5,8 @@ enum class TimerState
 {
     IDLE,
     RUNNING,
-    PAUSED
+    PAUSED,
+    STOPPING
 };
 
 struct RGBColor
@@ -28,8 +29,14 @@ public:
     void tick();
     void add(uint32_t, RGBColor);
     void stop();
+
+    // gpt
+    void updateDuration(uint32_t new_duration);
+    // --
+
     RGBColor getLastColor() const;
     uint32_t getRemainingTime() const;
+    TimerState getState();
 
 
 private:

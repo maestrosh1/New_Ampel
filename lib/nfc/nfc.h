@@ -11,3 +11,4 @@ void handleWildCard();
 bool isWildCard();
 void exec();
 bool myHandleWildCard();
+void load_timer();

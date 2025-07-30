@@ -10,7 +10,7 @@
 #define SCL_PIN 7
 #define RESET 5
 #define Sektor 2
-#define DURATION 60000 // 1 minute in milliseconds
+#define DURATION 15000 // 1 minute in milliseconds
 #define TIMEOUT 200    // 200 milliseconds timeout for NFC operations
 uint8_t firstBlock;
 bool compareUID(uint8_t *uid1, uint8_t len1, uint8_t *uid2, uint8_t len2);
@@ -71,12 +71,16 @@ void nfc_setup()
 void nfc_loop()
 {
     static uint32_t lastCycle = 0;
-    const uint32_t cycleTime = 200; // milliseconds between NFC reads
+    const uint32_t cycleTime = 300; // milliseconds between NFC reads - erhöht für bessere Webserver-Kompatibilität
 
     uint32_t now = millis();
     if (now - lastCycle >= cycleTime)
     {
         lastCycle = now;
+        
+        // Yield vor NFC-Operationen
+        yield();
+        
         nfc.reset();
 
         // Check if a card is present, and read its UID.
@@ -94,6 +98,9 @@ void nfc_loop()
         }
 
         // Serial.println("If this is the only thing that shows up, i2c does not work.");
+        
+        // Yield nach NFC-Operationen
+        yield();
     }
     timer.tick();
 }
@@ -204,7 +211,7 @@ bool kill_timer()
         if (nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLen, TIMEOUT))
         {
             // Handle the wildcard logic.
-            if (isWildCard)
+            if (isWildCard())
             {
                 return compareUID(wildCard.uid, wildCard.uidLen, uid, uidLen);
             }
